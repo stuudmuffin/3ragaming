@@ -218,31 +218,28 @@ end
 
 function orange_win()
 	global.end_screen = game.tick + 180
-	for k, player in pairs (game.players) do
+	for k, player in pairs (game.connected_players) do
 		if player.force.name == "Orange" then
-			showdialog("You win :D", "Orange team has beaten the Purple team. Well done!")
-		end
-		if player.force.name == "Purple" then
-			showdialog("You lost :(", "Purple team was beaten by the Orange team. Better luck next time.")
+			showdialog("You win :D", "Orange team has beaten the Purple team. Well done!", player)
+		elseif player.force.name == "Purple" then
+			showdialog("You lost :(", "Purple team was beaten by the Orange team. Better luck next time.", player)
 		end
 	end	
 end
 
 function purple_win(event)
 	global.end_screen = game.tick + 180
-	for k, player in pairs (game.players) do
+	for k, player in pairs (game.connected_players) do
 		if player.force.name == "Purple" then
-			showdialog("You win :D", "Purple team has beaten the Orange team. Well done!")
-		end
-		if player.force.name == "Orange" then
-			showdialog("You lost :(", "Orange team was beaten by the Purple team. Better luck next time.")
+			showdialog("You win :D", "Purple team has beaten the Orange team. Well done!", player)
+		elseif player.force.name == "Orange" then
+			showdialog("You lost :(", "Orange team was beaten by the Purple team. Better luck next time.", player)
 		end
 	end	
 end
 
 	--gui with a message, event on win.
-function showdialog(title, message)
-    for i, player in pairs(game.players) do
+function showdialog(title, message, player)
         local maybegui = player.gui.center.end_message
         if maybegui then
             maybegui.destroy()
@@ -250,7 +247,6 @@ function showdialog(title, message)
         local endgamegui = player.gui.center.add{type="frame", name="end_message", caption=title, direction="vertical"}
         endgamegui.add{type="label", caption=message}
         endgamegui.add{type="button", name="end_message_button", caption="Close this message"}
-    end
 end
 
 	-- when a player clicks the gui button to join orange.
