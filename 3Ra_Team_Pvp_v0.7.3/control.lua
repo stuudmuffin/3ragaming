@@ -209,48 +209,52 @@ end
 	--check on tick, to see if anyone has won.
 function win()
 	if global.kill_count_purple >= 100 then
-			purple_win()
+	global.end_screen = game.tick + 180
+	script.on_event(defines.events.on_tick, purple_win) 
 	end
 	if global.kill_count_orange >= 100 then
-			orange_win()
+	global.end_screen = game.tick + 180
+	script.on_event(defines.events.on_tick, orange_win) 
 	end
 end
 
 function orange_win()
-	global.end_screen = game.tick + 180
-	for k, player in pairs (game.players) do
-		if player.force.name == "Orange" then
-			showdialog("You win :D", "Orange team has beaten the Purple team. Well done!")
-		end
-		if player.force.name == "Purple" then
-			showdialog("You lost :(", "Purple team was beaten by the Orange team. Better luck next time.")
-		end
+	if game.tick == global.end_screen then 
+		for k, player in pairs (game.players) do
+			if player.force.name == "Orange" then
+				showdialog("You win :D", "Orange team has beaten the Purple team. Well done!")
+			end
+			if player.force.name == "Purple" then
+				showdialog("You lost :(", "Purple team was beaten by the Orange team. Better luck next time.")
+			end
+		end	
 	end	
 end
 
-function purple_win(event)
-	global.end_screen = game.tick + 180
-	for k, player in pairs (game.players) do
-		if player.force.name == "Purple" then
-			showdialog("You win :D", "Purple team has beaten the Orange team. Well done!")
-		end
-		if player.force.name == "Orange" then
-			showdialog("You lost :(", "Orange team was beaten by the Purple team. Better luck next time.")
-		end
+function purple_win()
+	if game.tick == global.end_screen then
+		for k, player in pairs (game.players) do
+			if player.force.name == "Purple" then
+				showdialog("You win :D", "Purple team has beaten the Orange team. Well done!")
+			end
+			if player.force.name == "Orange" then
+				showdialog("You lost :(", "Orange team was beaten by the Purple team. Better luck next time.")
+			end
+		end	
 	end	
 end
 
 	--gui with a message, event on win.
 function showdialog(title, message)
-    for i, player in pairs(game.players) do
-        local maybegui = player.gui.center.end_message
-        if maybegui then
-            maybegui.destroy()
-        end
-        local endgamegui = player.gui.center.add{type="frame", name="end_message", caption=title, direction="vertical"}
-        endgamegui.add{type="label", caption=message}
-        endgamegui.add{type="button", name="end_message_button", caption="Close this message"}
-    end
+	if game.tick == global.end_screen then
+		for i, player in pairs(game.players) do
+			if player.gui.center.end_message == nil then
+				local frame = player.gui.center.add{type="frame", name="end_message", caption=title, direction="vertical"}
+				frame.add{type="label", caption=message}
+				frame.add{type="button", name="end_message_button", caption="Close this message"}
+			end
+		end
+	end
 end
 
 	-- when a player clicks the gui button to join orange.
@@ -417,9 +421,9 @@ script.on_event(defines.events.on_gui_click, function(event)
             end
         end
 	end	
-	if event.element.name == "end_message_button" then
-		if game.players.gui.center.end_message then
-			game.players.gui.center.end_message.destroy()
+	if player.gui.center.end_message ~= nil then
+		if (event.element.name == "end_message_button") then
+			player.gui.center.end_message.destroy()
 		end
     end
 	if player.gui.left.choose_team ~= nil then
