@@ -217,35 +217,37 @@ function win()
 end
 
 function orange_win()
-	local player = game.players[event.player_index]
 	global.end_screen = game.tick + 180
-	if player.force.name == "Orange" then
-		showdialog("You win :D", "Orange team has beaten the Purple team. Well done!")
-	end
-	if player.force.name == "Purple" then
-		showdialog("You lost :(", "Purple team was beaten by the Orange team. Better luck next time.")
-	end
+	for k, player in pairs (game.players) do
+		if player.force.name == "Orange" then
+			showdialog("You win :D", "Orange team has beaten the Purple team. Well done!")
+		end
+		if player.force.name == "Purple" then
+			showdialog("You lost :(", "Purple team was beaten by the Orange team. Better luck next time.")
+		end
+	end	
 end
 
-function purple_win()
-	local player = game.players[event.player_index]
+function purple_win(event)
 	global.end_screen = game.tick + 180
-	if player.force.name == "Purple" then
-		showdialog("You win :D", "Purple team has beaten the Orange team. Well done!")
-	end
-	if player.force.name == "Orange" then
-		showdialog("You lost :(", "Orange team was beaten by the Purple team. Better luck next time.")
-	end
+	for k, player in pairs (game.players) do
+		if player.force.name == "Purple" then
+			showdialog("You win :D", "Purple team has beaten the Orange team. Well done!")
+		end
+		if player.force.name == "Orange" then
+			showdialog("You lost :(", "Orange team was beaten by the Purple team. Better luck next time.")
+		end
+	end	
 end
 
 	--gui with a message, event on win.
 function showdialog(title, message)
-    for i, x in pairs(game.players) do
-        local maybegui = x.gui.center['end_message']
+    for i, player in pairs(game.players) do
+        local maybegui = player.gui.center.end_message
         if maybegui then
             maybegui.destroy()
         end
-        local endgamegui = x.gui.center.add{type="frame", name="end_message", caption=title, direction="vertical"}
+        local endgamegui = player.gui.center.add{type="frame", name="end_message", caption=title, direction="vertical"}
         endgamegui.add{type="label", caption=message}
         endgamegui.add{type="button", name="end_message_button", caption="Close this message"}
     end
@@ -416,10 +418,9 @@ script.on_event(defines.events.on_gui_click, function(event)
         end
 	end	
 	if event.element.name == "end_message_button" then
-        local maybegui = player.gui.center['end_message']
-        if maybegui then
-            maybegui.destroy()
-        end
+		if game.players.gui.center.end_message then
+			game.players.gui.center.end_message.destroy()
+		end
     end
 	if player.gui.left.choose_team ~= nil then
 		if (event.element.name == "orange") then
