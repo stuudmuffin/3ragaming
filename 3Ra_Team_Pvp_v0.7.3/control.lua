@@ -1,3 +1,5 @@
+--Team PVP [Based on Roboport_PvP_Slow by Klonan]
+--A 3Ra Gaming revision
 --Starting Variables
 global.orange_count_total = 0
 global.purple_count_total = 0
