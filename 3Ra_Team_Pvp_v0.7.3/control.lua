@@ -4,8 +4,8 @@ global.purple_count_total = 0
 
 d = 32*3
 bd = d*3
-orange_color = {b = 0, r= 0.8, g = 0.4, a = 0.8}
-purple_color = {b = 0.8, r= 0.4, g = 0, a = 0.8}
+global.orange_color = {b = 0, r= 0.8, g = 0.4, a = 0.8}
+global.purple_color = {b = 0.8, r= 0.4, g = 0, a = 0.8}
 
 normal_attack_sent_event = script.generate_event_name()
 landing_attack_sent_event = script.generate_event_name()
@@ -141,7 +141,7 @@ end
 function make_team_option(player)
 	if player.gui.left.choose_team == nil then
 		local frame = player.gui.left.add{name = "choose_team", type = "frame", direction = "vertical", caption="Choose your Team"}
-		frame.add{type = "button", caption = "Join Orange Team", name = "orange"}.style.font_color = orange_color
+		frame.add{type = "button", caption = "Join Orange Team", name = "orange"}.style.font_color = global.orange_color
         frame.add{type = "button", caption = "Join Purple Team", name = "purple"}.style.font_color = {r = 0.5,b = 1, g = 0.1}
 		if player.admin == true then
 			frame.add{type = "button", caption = "Join Spectators", name = "spectator"}.style.font_color = {r = 0.1,b = 0.4,g = 1}
@@ -209,12 +209,12 @@ end
 	--check on tick, to see if anyone has won.
 function win()
 	if global.kill_count_purple >= 100 then
-	global.end_screen = game.tick + 180
-	script.on_event(defines.events.on_tick, purple_win) 
+		global.end_screen = game.tick + 180
+		script.on_event(defines.events.on_tick, purple_win) 
 	end
 	if global.kill_count_orange >= 100 then
-	global.end_screen = game.tick + 180
-	script.on_event(defines.events.on_tick, orange_win) 
+		global.end_screen = game.tick + 180
+		script.on_event(defines.events.on_tick, orange_win) 
 	end
 end
 
@@ -270,7 +270,7 @@ function join_orange(event)
     end
 			global.orange_count_total = global.orange_count_total + 1
 			player.teleport(game.forces["Orange"].get_spawn_position(s), game.surfaces.nauvis)
-			player.color = orange_color
+			player.color = global.orange_color
 			player.force = game.forces["Orange"]
 			player.gui.left.choose_team.destroy()
 			starting_inventory(event)
@@ -294,7 +294,7 @@ function join_purple(event)
     end
 			global.purple_count_total = global.purple_count_total + 1
 			player.teleport(game.forces["Purple"].get_spawn_position(s), game.surfaces.nauvis)
-			player.color = purple_color
+			player.color = global.purple_color
 			player.force = game.forces["Purple"]
 			player.gui.left.choose_team.destroy()
 			starting_inventory(event)
@@ -358,11 +358,9 @@ global.timer_display = 1
 script.on_event(defines.events.on_tick, function(event)
 	show_health()
 	win()
-	--[[if game.tick == 60*60 then
-		for k, p in pairs (game.players) do
-			p.print("Teams will unlock in 30 seconds")
-		end
-	end]]
+  if game.tick % 20 == 0 then
+		color()
+  end
 	if game.tick == 50 * 60 then  ----------*************^^^^these have to match**********----------
 		set_spawns()
 		for k, p in pairs (game.players) do
@@ -644,7 +642,7 @@ function update_count()
   for k,p in pairs(game.players) do
     if p.gui.left.persons == nil then
 		local frame = p.gui.left.add{name="persons",type="frame",direction="horizontal",caption="Players"}
-		frame.add{type="label",name="orange",caption=orange_status}.style.font_color = orange_color
+		frame.add{type="label",name="orange",caption=orange_status}.style.font_color = global.orange_color
 		frame.add{type="label", name="Vs", caption= "VS", style="caption_label_style"}
 		frame.add{type="label",name="purple",caption=purple_status,}.style.font_color = {r = 0.5,b = 1, g = 0.1}
     else
@@ -666,7 +664,7 @@ function show_update_score()
 		for index, player in pairs(game.players) do
 			if player.gui.left.kill_score == nil then
 				local frame = player.gui.left.add{name = "kill_score", type = "frame", direction = "horizontal", caption="Kill score"}
-				frame.add{type = "label", caption = global.kill_count_orange, name = "kill_count_orange"}.style.font_color = orange_color
+				frame.add{type = "label", caption = global.kill_count_orange, name = "kill_count_orange"}.style.font_color = global.orange_color
 				frame.add{type = "label", caption = global.kill_count_purple, name = "kill_count_purple"}.style.font_color = {r = 0.5,b = 1, g = 0.1}
 			else
 				player.gui.left.kill_score.kill_count_purple.caption = tostring(global.kill_count_purple)
@@ -675,3 +673,32 @@ function show_update_score()
 		end
 	end
 end
+
+function color()
+	for _, player in pairs (game.connected_players) do
+    local temp_r = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.r))
+    local temp_b = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.b))
+    local temp_g = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.g))
+    local temp_a = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.a))
+		if player.force == game.forces["Orange"] then
+				--compare orange color
+			if temp_r ~= global.orange_color.r
+        or temp_b ~= global.orange_color.b
+        or temp_g ~= global.orange_color.g
+        then
+				player.color = global.orange_color
+				player.print("Not allowed to change your color.")
+			end
+		end    
+		if player.force == game.forces["Purple"] then
+				---compare purple color
+			if temp_r ~= global.purple_color.r
+        or temp_b ~= global.purple_color.b
+        or temp_g ~= global.purple_color.g
+        then
+				player.color = global.purple_color
+				player.print("Not allowed to change your color.")
+			end
+		end
+	end
+end	
