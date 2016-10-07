@@ -1,3 +1,6 @@
+--Undecorator
+--A 3Ra Gaming creation
+--removes decorations on the map to reduce stress on players computers
 local CHUNK_SIZE = 32
 
 local function removeDecorationsArea(surface, area )
