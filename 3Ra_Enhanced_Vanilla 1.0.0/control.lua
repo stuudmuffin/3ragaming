@@ -1,3 +1,5 @@
+--Enhanced Vanilla
+--A 3Ra Gaming compilation
 if not scenario then scenario = {} end
 if not scenario.config then scenario.config = {} end
 --config and event must be called first.
