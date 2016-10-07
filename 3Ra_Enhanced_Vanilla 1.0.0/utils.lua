@@ -1,5 +1,5 @@
 -- utils.lua by binbinhfr, v1.0.16
-
+-- A 3Ra Gaming revision
 -- define debug_status to 1 or nil in the control.lua, before statement require("utils")
 -- define also debug_file and debug_mod_name
 
