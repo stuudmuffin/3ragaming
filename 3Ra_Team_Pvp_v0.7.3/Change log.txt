@@ -1,5 +1,9 @@
 3Ra_Roboport_v0.6
 
+v0.7.3
+added stuff and things
+added color() to force players team color on tick
+
 v0.6.4
 improved admin spectating capabilities.
 may have broken flashlight toggle…
