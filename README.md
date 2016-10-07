@@ -9,4 +9,4 @@ If the Factorio dev's ever make Mod downloading a seemless rebootable process, o
 
 We've even got a few fun "non vanilla style" playable scenarios, like Free For All Battle Areana, Two team PVP, and Capture the flag! We will make as many more custom scenario's as we can think of and create. Our biggest hope is that the factorio dev's will unlock more customizable or managable aspects of their API to allow more freedom in custom scenario creation. 
 
-You're welcome to download and play these as well. We just ask that you include "3Ra Scenario" somewhere in your server description or tags. Join our discord at www.3ragaming.com/discord and we can collaborate on fun idea's!
+You're welcome to download and play these as well. We just ask that you include "3Ra Scenario" (or something of the sort) somewhere in your server description or tags. If you use our scenario's, please leave our name in the file comments. Join our discord at www.3ragaming.com/discord and we can collaborate on fun idea's!
