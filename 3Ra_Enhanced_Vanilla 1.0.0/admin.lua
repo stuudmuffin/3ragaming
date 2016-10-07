@@ -1,5 +1,5 @@
 --Admin gui
-
+--a 3Ra Gaming creation
 local function gui_click(event)
     local p = game.players[event.player_index]
     local i = event.player_index
