@@ -1,3 +1,5 @@
+--Rocket Launch GUI [based off of the default freeplay scenario]
+--A 3Ra Gaming creation
 require("utils")
 require("config")
 default_precision = 1;
