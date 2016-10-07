@@ -264,7 +264,6 @@ function join_orange(event)
     local index = event.player_index
 	if player.character == nil then
         if player.connected then
-			if global.orange_count > global.purple_count then player.print("Too many Players on that team") return end
             local character = player.surface.create_entity{name = "player", position = player.surface.find_non_colliding_position("player", player.force.get_spawn_position(player.surface), 10, 2), force = force}
             player.set_controller{type = defines.controllers.character, character = character}
         end
@@ -289,7 +288,6 @@ function join_purple(event)
     local index = event.player_index
 	if player.character == nil then
         if player.connected then
-			if global.purple_count > global.orange_count then player.print("Too many Players on that team") return end
             local character = player.surface.create_entity{name = "player", position = player.surface.find_non_colliding_position("player", player.force.get_spawn_position(player.surface), 10, 2), force = force}
             player.set_controller{type = defines.controllers.character, character = character}
         end
@@ -345,7 +343,7 @@ script.on_event(defines.events.on_player_created, function(event)
 	player.print({"msg-intro1"})
 	player.print({"msg-intro2"})
  
-	if game.tick > 90*60 then
+	if game.tick > 50*60 then    ------------*************vvvvvvthese have to match**********----------
 		make_team_option(player)
 	else 
 		player.print({"msg-intro3"})
@@ -360,16 +358,12 @@ global.timer_display = 1
 script.on_event(defines.events.on_tick, function(event)
 	show_health()
 	win()
-	if game.tick == 1*60 then
-		game.speed = 1000
-	end
 	--[[if game.tick == 60*60 then
 		for k, p in pairs (game.players) do
 			p.print("Teams will unlock in 30 seconds")
 		end
 	end]]
-	if game.tick == 50 * 60 then
-        game.speed = 1
+	if game.tick == 50 * 60 then  ----------*************^^^^these have to match**********----------
 		set_spawns()
 		for k, p in pairs (game.players) do
 			make_team_option(p)
@@ -428,12 +422,14 @@ script.on_event(defines.events.on_gui_click, function(event)
     end
 	if player.gui.left.choose_team ~= nil then
 		if (event.element.name == "orange") then
-			join_orange(event)
+			if global.orange_count > global.purple_count then player.print("Too many Players on that team") return end
+				join_orange(event)
 		end
 	end
 	if player.gui.left.choose_team ~= nil then
 		if (event.element.name == "purple") then
-            join_purple(event)
+			if global.purple_count > global.orange_count then player.print("Too many Players on that team") return end
+				join_purple(event)
 		end
 	end
 	if player.gui.left.choose_team ~= nil then
@@ -629,6 +625,7 @@ function update_count()
   local purple_online = global.purple_count
   for k, p in pairs (game.players) do
 	if p.force == game.forces.Orange then
+		orange_online = 0
 		if p.connected then
 			orange_online = orange_online + 1
 		end
@@ -636,6 +633,7 @@ function update_count()
   end
   for k,p in pairs(game.players) do
 	if p.force == game.forces.Purple then
+		purple_online = 0
 		if p.connected then
 			purple_online = purple_online + 1
 		end
@@ -654,6 +652,13 @@ function update_count()
 		p.gui.left.persons.purple.caption = purple_status
     end
   end
+end
+
+function server_message(user, message)
+    print("[WEB] ", user, ": ", message)
+    for _, p in pairs (game.connected_players) do
+        p.print("[WEB] ", user, ": ", message)
+    end
 end
 
 function show_update_score()
