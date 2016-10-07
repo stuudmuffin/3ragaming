@@ -1,4 +1,5 @@
---Battle Arena 0.1.4 by 3Ra Gaming
+--Battle Arena 0.1.4
+--A 3Ra Gaming creation
 --A Halo inspired concept
 script.on_event(defines.events.on_player_created, function(event)
   local player = game.players[event.player_index]
