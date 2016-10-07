@@ -1,3 +1,5 @@
+--Periodic Announcements
+--A 3Ra Gaming creation
 --List of announcements that are printed periodically, going through the list.
 local announcements = {
 	{"msg-announce1"},
