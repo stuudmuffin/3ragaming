@@ -660,6 +660,8 @@ function server_message(user, message)
 end
 
 function show_update_score()
+	if global.kill_count_purple == nil then global.kill_count_purple = 0 end
+	if global.kill_count_orange == nil then global.kill_count_orange = 0 end
 	if global.kill_count_orange > 0 or global.kill_count_purple > 0 then
 		for index, player in pairs(game.players) do
 			if player.gui.left.kill_score == nil then
