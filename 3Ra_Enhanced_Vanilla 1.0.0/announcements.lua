@@ -24,7 +24,6 @@ local function show_announcement(event)
 end
 
 local function show_intro(event)
-	game.print("test")
 	local player = game.players[event.player_index]
 	for i,v in ipairs(intros) do
 		player.print(v)
