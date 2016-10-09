@@ -1,3 +1,5 @@
+--Team PVP [Based on Roboport_PvP_Slow by Klonan]
+--A 3Ra Gaming revision
 --Starting Variables
 global.orange_count_total = 0
 global.purple_count_total = 0
@@ -272,6 +274,8 @@ script.on_event(defines.events.on_entity_died, function(event)
 end)
 	
 script.on_event(defines.events.on_player_died, function(event)
+	if global.kill_count_purple == nil then global.kill_count_purple = 0 end
+	if global.kill_count_orange == nil then global.kill_count_orange = 0 end
 	local player = game.players[event.player_index]
 	if player.force.name == "Orange" then
 		global.kill_count_purple = global.kill_count_purple + 1  
@@ -343,16 +347,18 @@ end
 function set_starting_areas()
 	local s = game.surfaces.nauvis
 	s.set_tiles{
-    {name = "water", position ={ global.purple_team_x + 16,  global.purple_team_y +16}},
-    {name = "water", position ={ global.purple_team_x + 17,  global.purple_team_y +16}},
-    {name = "water", position ={ global.purple_team_x + 16,  global.purple_team_y +17}},
-    {name = "water", position ={ global.purple_team_x + 17,  global.purple_team_y +17}}}
+    		{name = "water", position ={ global.purple_team_x + 16,  global.purple_team_y +16}},
+    		{name = "water", position ={ global.purple_team_x + 17,  global.purple_team_y +16}},
+    		{name = "water", position ={ global.purple_team_x + 16,  global.purple_team_y +17}},
+    		{name = "water", position ={ global.purple_team_x + 17,  global.purple_team_y +17}}
+	}
         
 	s.set_tiles{
-    {name = "water", position = { global.orange_team_x + 16, global.orange_team_y +16}},
-    {name = "water", position = { global.orange_team_x + 17, global.orange_team_y +16}},
-    {name = "water", position = { global.orange_team_x + 16, global.orange_team_y +17}},
-    {name = "water", position = { global.orange_team_x + 17, global.orange_team_y +17}}}
+    		{name = "water", position = { global.orange_team_x + 16, global.orange_team_y +16}},
+    		{name = "water", position = { global.orange_team_x + 17, global.orange_team_y +16}},
+    		{name = "water", position = { global.orange_team_x + 16, global.orange_team_y +17}},
+    		{name = "water", position = { global.orange_team_x + 17, global.orange_team_y +17}}
+	}
 
 	for k, pr in pairs (s.find_entities_filtered{area = {{ global.purple_team_x-128,  global.purple_team_y-128},{ global.purple_team_x+128,  global.purple_team_y+128}}, type= "resource"}) do
 		pr.destroy()
@@ -389,7 +395,7 @@ function make_team_option(player)
 	if player.gui.left.choose_team == nil then
 		local frame = player.gui.left.add{name = "choose_team", type = "frame", direction = "vertical", caption="Choose your Team"}
 		frame.add{type = "button", caption = "Join Orange Team", name = "orange"}.style.font_color = global.orange_color
-        frame.add{type = "button", caption = "Join Purple Team", name = "purple"}.style.font_color = {r = 0.5,b = 1, g = 0.1}
+        	frame.add{type = "button", caption = "Join Purple Team", name = "purple"}.style.font_color = {r = 0.5,b = 1, g = 0.1}
 		if player.admin == true then
 			frame.add{type = "button", caption = "Join Spectators", name = "spectator"}.style.font_color = {r = 0.1,b = 0.4,g = 1}
 		end
@@ -403,8 +409,8 @@ function purple_destroy_o()
 	
 	for k, p in pairs (game.players) do
 		--if p.force == game.forces["Purple"] then
-			p.print("Orange teams Roboport has been destroyed")
-			p.print("Purple was Awarded 40 Points")
+		p.print("Orange teams Roboport has been destroyed")
+		p.print("Purple was Awarded 40 Points")
 		--end	
 	end
 	script.on_event(defines.events.on_tick, kill_orange)
@@ -508,45 +514,45 @@ end
 function join_orange(event)
 	local s = game.surfaces.nauvis
 	local player = game.players[event.player_index]
-    local index = event.player_index
+   	local index = event.player_index
 	if player.character == nil then
-        if player.connected then
-            local character = player.surface.create_entity{name = "player", position = player.surface.find_non_colliding_position("player", player.force.get_spawn_position(player.surface), 10, 2), force = force}
-            player.set_controller{type = defines.controllers.character, character = character}
-        end
-    end
-			global.orange_count_total = global.orange_count_total + 1
-			player.teleport(game.forces["Orange"].get_spawn_position(s), game.surfaces.nauvis)
-			player.color = global.orange_color
-			player.force = game.forces["Orange"]
-			player.gui.left.choose_team.destroy()
-			starting_inventory(event)
-			update_count()
-			player.print("Destroy the Purple Roboport for 40 extra points")      
+        	if player.connected then
+            	local character = player.surface.create_entity{name = "player", position = player.surface.find_non_colliding_position("player", player.force.get_spawn_position(player.surface), 10, 2), force = force}
+            	player.set_controller{type = defines.controllers.character, character = character}
+        	end
+    	end
+	global.orange_count_total = global.orange_count_total + 1
+	player.teleport(game.forces["Orange"].get_spawn_position(s), game.surfaces.nauvis)
+	player.color = global.orange_color
+	player.force = game.forces["Orange"]
+	player.gui.left.choose_team.destroy()
+	starting_inventory(event)
+	update_count()
+	player.print("Destroy the Purple Roboport for 40 extra points")      
 	for k, p in pairs (game.players) do
 		p.print(player.name.." has joined team Orange")
 	end
 end
 
-	--when a player clicks the gui button to join purple.
+--when a player clicks the gui button to join purple.
 function join_purple(event)
 	local s = game.surfaces.nauvis
 	local player = game.players[event.player_index]
-    local index = event.player_index
+    	local index = event.player_index
 	if player.character == nil then
-        if player.connected then
-            local character = player.surface.create_entity{name = "player", position = player.surface.find_non_colliding_position("player", player.force.get_spawn_position(player.surface), 10, 2), force = force}
-            player.set_controller{type = defines.controllers.character, character = character}
-        end
-    end
-			global.purple_count_total = global.purple_count_total + 1
-			player.teleport(game.forces["Purple"].get_spawn_position(s), game.surfaces.nauvis)
-			player.color = global.purple_color
-			player.force = game.forces["Purple"]
-			player.gui.left.choose_team.destroy()
-			starting_inventory(event)
-			update_count()
-			player.print("Destroy the Orange Roboport for 40 extra points")
+        	if player.connected then
+            		local character = player.surface.create_entity{name = "player", position = player.surface.find_non_colliding_position("player", player.force.get_spawn_position(player.surface), 10, 2), force = force}
+            		player.set_controller{type = defines.controllers.character, character = character}
+        	end
+    	end
+	global.purple_count_total = global.purple_count_total + 1
+	player.teleport(game.forces["Purple"].get_spawn_position(s), game.surfaces.nauvis)
+	player.color = global.purple_color
+	player.force = game.forces["Purple"]
+	player.gui.left.choose_team.destroy()
+	starting_inventory(event)
+	update_count()
+	player.print("Destroy the Orange Roboport for 40 extra points")
 	for k, p in pairs (game.players) do
 		p.print(player.name.." has joined team Purple")
 	end
@@ -554,7 +560,7 @@ end
 
 function starting_inventory(event)
 	local player = game.players[event.player_index]
-    local index = event.player_index
+    	local index = event.player_index
 	player.insert{name="iron-plate", count=8}
 	player.insert{name="submachine-gun", count=1}
 	player.insert{name="piercing-rounds-magazine", count=100}
@@ -562,8 +568,135 @@ function starting_inventory(event)
 	player.insert{name="stone-furnace", count = 10}
 end
 
+-- distance between bases
+script.on_init(function()
+	global.purple_team_x = math.random(370,380)
+	global.purple_team_y = math.random(0,0)
+	global.purple_team_position ={ global.purple_team_x, global.purple_team_y}
+	global.purple_team_area = {{ global.purple_team_x - d,  global.purple_team_y - d},{ global.purple_team_x + d,  global.purple_team_y + d}}
+	global.orange_team_x = 0 - math.random(370,380)
+	global.orange_team_y = 0 - math.random(0,0)
+	global.orange_team_position = { global.orange_team_x, global.orange_team_y}
+	global.orange_team_area = {{ global.orange_team_x - d,  global.orange_team_y - d},{ global.orange_team_x + d,  global.orange_team_y + d}}
+  
+	init_attack_data()
+	make_forces()  
+	make_lobby()
+end)
+
+script.on_event(defines.events.on_player_created, function(event)
+	if global.orange_count == nil then
+		global.orange_count = 0
+	end
+	if global.purple_count == nil then
+		global.purple_count = 0
+	end
+	local player = game.players[event.player_index]
+	player.teleport({0,8},game.surfaces["Lobby"])
+	player.print({"msg-intro1"})
+	player.print({"msg-intro2"})
+ 
+	if game.tick > 50*60 then    ------------*************vvvvvvthese have to match**********----------
+		make_team_option(player)
+	else 
+		player.print({"msg-intro3"})
+	end
+end)
+
+script.on_event(defines.events.on_tick, function(event)
+	show_health()
+	win()
+  	if game.tick % 20 == 0 then
+		color()
+  	end
+	if game.tick == 50 * 60 then  ----------*************^^^^these have to match**********----------
+		set_spawns()
+		for k, p in pairs (game.players) do
+			make_team_option(p)
+		end
+		set_starting_areas()
+	end
+		
+	--global variables for the message desplay
+	if global.timer_value == nil then global.timer_value = 0 end
+	if global.timer_wait == nil then global.timer_wait = 595 end
+	if global.timer_display == nil then global.timer_display = 1 end
+	
+	local current_time = game.tick / 60 - global.timer_value
+	local message_display = "test"
+	if current_time >= global.timer_wait then
+		if global.timer_display == 1 then
+			message_display = {"msg-announce1"}
+			global.timer_display = 2
+		else
+			message_display = {"msg-announce2"}
+			global.timer_display = 1
+		end
+		for k, player in pairs(game.players) do
+			player.print(message_display)
+		end
+		global.timer_value = game.tick / 60
+	end
+end)
+
+script.on_event(defines.events.on_gui_click, function(event)
+	local s = game.surfaces.nauvis
+	local player = game.players[event.player_index]
+    	local index = event.player_index
+    	local element = event.element.name
+		
+	if player.gui.top.flashlight == nil then
+        	if element ~= nil then
+            	if element == "flashlight" then
+                	if player.character == nil then return end
+                	if global.player_flashlight_state == nil then global.player_flashlight_state = {} end
+                	if global.player_flashlight_state[event.player_index] == nil then global.player_flashlight_state[event.player_index] = true end
+    
+                	if global.player_flashlight_state[event.player_index] then
+                   		global.player_flashlight_state[event.player_index] = false
+                    		player.character.disable_flashlight()
+                	else
+                    		global.player_flashlight_state[event.player_index] = true
+                    		player.character.enable_flashlight()
+                	end
+            	end
+        end
+	end	
+	if player.gui.center.end_message ~= nil then
+		if (event.element.name == "end_message_button") then
+			player.gui.center.end_message.destroy()
+		end
+    	end
+	if player.gui.left.choose_team ~= nil then
+		if (event.element.name == "orange") then
+			if global.orange_count > global.purple_count then player.print("Too many Players on that team") return end
+				join_orange(event)
+		end
+	end
+	if player.gui.left.choose_team ~= nil then
+		if (event.element.name == "purple") then
+			if global.purple_count > global.orange_count then player.print("Too many Players on that team") return end
+				join_purple(event)
+		end
+	end
+	if player.gui.left.choose_team ~= nil then
+		if (event.element.name == "spectator") then
+			force_spectators(index)
+		end
+		--destroy.character
+		--make controller ghost
+	end
+    	if player.gui.left.spectate ~= nil then
+        	if element ~= nil then
+            		if element == "spectate" then
+              			force_spectators(index)
+            		end
+        	end
+    	end
+end)
+
 function show_health()
-    for k, player in pairs(game.players) do
+    	for k, player in pairs(game.players) do
 		if player.connected then
 			if player.character then
 				if player.character.health == nil then return end
@@ -583,22 +716,22 @@ function show_health()
 						end
 					end
 				end
-            end
-        end
-    end 
+            		end
+        	end
+    	end 
 end	
 
 function force_spectators(index)
-    local player = game.players[index]
-    if global.player_spectator_state == nil then global.player_spectator_state = {} end
-    if global.player_spectator_character == nil then global.player_spectator_character = {}  end
-    if global.player_spectator_force == nil then global.player_spectator_force = {} end
-    if global.player_spectator_state[index] then
-        --remove spectator mode
-        if player.character == nil and global.player_spectator_character[index] ~= nil then
-            local pos = player.position
+    	local player = game.players[index]
+    	if global.player_spectator_state == nil then global.player_spectator_state = {} end
+    	if global.player_spectator_character == nil then global.player_spectator_character = {}  end
+    	if global.player_spectator_force == nil then global.player_spectator_force = {} end
+    	if global.player_spectator_state[index] then
+        	--remove spectator mode
+        	if player.character == nil and global.player_spectator_character[index] ~= nil then
+            		local pos = player.position
 			player.set_controller{type=defines.controllers.character, character=global.player_spectator_character[index]}
-            player.teleport(pos)
+            		player.teleport(pos)
 		end
         global.player_spectator_state[index] = false
         player.force = game.forces[global.player_spectator_force[index].name]
@@ -619,14 +752,10 @@ function force_spectators(index)
         player.force = game.forces["Spectators"]
         global.player_spectator_state[index] = true
 		player.print("You are now a spectator")
-    end
+    	end
 end
 
-		end	
-	--end
-end	
-
-	-- updates the player count gui for total players joined each force, and players online for each force.
+-- updates the player count gui for total players joined each force, and players online for each force.
 function update_count()
   local orange_total = global.orange_count_total
   local purple_total = global.purple_count_total
@@ -663,13 +792,15 @@ end
 
 	--this is for a server to monotor chat and print chat in game from a web page.(@StudMuffin/Discord)
 function server_message(user, message)
-    print("[WEB] ", user, ": ", message)
-    for _, p in pairs (game.connected_players) do
-        p.print("[WEB] ", user, ": ", message)
-    end
+    	print("[WEB] ", user, ": ", message)
+    	for _, p in pairs (game.connected_players) do
+        	p.print("[WEB] ", user, ": ", message)
+    	end
 end
 
 function show_update_score()
+	if global.kill_count_purple == nil then global.kill_count_purple = 0 end
+	if global.kill_count_orange == nil then global.kill_count_orange = 0 end
 	if global.kill_count_orange > 0 or global.kill_count_purple > 0 then
 		for index, player in pairs(game.players) do
 			if player.gui.left.kill_score == nil then
@@ -687,26 +818,26 @@ end
 
 function color()
 	for _, player in pairs (game.connected_players) do
-    local temp_r = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.r))
-    local temp_b = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.b))
-    local temp_g = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.g))
-    local temp_a = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.a))
+    		local temp_r = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.r))
+    		local temp_b = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.b))
+    		local temp_g = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.g))
+    		local temp_a = tonumber(string.format("%." .. (1 or 0) .. "f", player.color.a))
 		if player.force == game.forces["Orange"] then
-				--compare orange color
+			--compare orange color
 			if temp_r ~= global.orange_color.r
-        or temp_b ~= global.orange_color.b
-        or temp_g ~= global.orange_color.g
-        then
+        		or temp_b ~= global.orange_color.b
+       			or temp_g ~= global.orange_color.g
+        		then
 				player.color = global.orange_color
 				player.print("Not allowed to change your color.")
 			end
 		end    
 		if player.force == game.forces["Purple"] then
-				---compare purple color
+			---compare purple color
 			if temp_r ~= global.purple_color.r
-        or temp_b ~= global.purple_color.b
-        or temp_g ~= global.purple_color.g
-        then
+        		or temp_b ~= global.purple_color.b
+        		or temp_g ~= global.purple_color.g
+        		then
 				player.color = global.purple_color
 				player.print("Not allowed to change your color.")
 			end

@@ -1,3 +1,5 @@
+--Enhanced Vanilla
+--A 3Ra Gaming compilation
 if not scenario then scenario = {} end
 if not scenario.config then scenario.config = {} end
 --config and event must be called first.
@@ -25,6 +27,12 @@ function player_respawned(event)
 	local player = game.players[event.player_index]
 	player.insert{name="pistol", count=1}
 	player.insert{name="firearm-magazine", count=10}
+end
+
+--Special command for communicating through our custom web-gui
+function server_message(user, message)
+	print("[WEB] "..user..": "..message)
+	game.print("[WEB] "..user..": "..message)
 end
 
 Event.register(defines.events.on_player_created, player_joined)

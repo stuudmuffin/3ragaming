@@ -1,5 +1,5 @@
 --capture the flag, a Halo inspired concept (think sidewinder)
-
+--A 3Ra Gaming creation
 --Starting Variables
 global.red_count_total = 0
 global.blue_count_total = 0

@@ -1,3 +1,5 @@
+--Event Capture
+--A 3Ra Gaming revision, original from Factorio-Stdlib by Afforess
 -- @module Event
 
 function fail_if_missing(var, msg)

@@ -1,5 +1,5 @@
 -- utils.lua by binbinhfr, v1.0.16
-
+-- A 3Ra Gaming revision
 -- define debug_status to 1 or nil in the control.lua, before statement require("utils")
 -- define also debug_file and debug_mod_name
 
@@ -335,3 +335,41 @@ function extract_monolith(filename, x, y, w, h)
 	}
 end
 
+
+--------------------------------------------------------------------------------------
+-- rounds number (num) to certain number of decimal places (idp)
+function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
+-- cleans up the color values, gets rid of floating point innacuracy
+function clean_color(input_color)
+  local temp_r = round(input_color.r,2)
+	local temp_g = round(input_color.g,2)
+	local temp_b = round(input_color.b,2)
+	local temp_a = round(input_color.a,2)
+	return {r = temp_r, g = temp_g, b = temp_b, a = temp_a}
+end
+
+--------------------------------------------------------------------------------------
+-- returns true if colors are the same, false if different
+function compare_colors(color1, color2)
+  local clean_color1 = clean_color(color1)
+  local clean_color2 = clean_color(color2)
+  if clean_color1.r ~= clean_color2.r then
+    return false
+  end
+  if clean_color1.g ~= clean_color2.g then
+    return false
+  end
+  if clean_color1.b ~= clean_color2.b then
+    return false
+  end
+  if clean_color1.a ~= clean_color2.a then
+    return false
+  end
+  return true
+end
+
+--------------------------------------------------------------------------------------

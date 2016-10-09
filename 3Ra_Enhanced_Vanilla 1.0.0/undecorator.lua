@@ -1,3 +1,6 @@
+--Undecorator
+--A 3Ra Gaming creation
+--removes decorations on the map to reduce stress on players computers
 local CHUNK_SIZE = 32
 
 local function removeDecorationsArea(surface, area )
@@ -32,5 +35,6 @@ Event.register(defines.events.on_tick, function(event)
         global.fullClear = true
     end
     
-    Event.register(defines.events.on_tick, nil)
+    --This command broke stuff and caused desyncs. Don't think it's really needed anyway.
+    --Event.register(defines.events.on_tick, nil)
 end)

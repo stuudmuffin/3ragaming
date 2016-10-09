@@ -1,3 +1,5 @@
+--Gravestone [based on Hazzard's Gravestone Mod]
+--A 3Ra Gaming revision
 --[[ list of inventories to save - constants from api reference]]--
 local storeinventories = { 
 	defines.inventory.player_vehicle,
