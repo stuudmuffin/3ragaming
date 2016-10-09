@@ -2,6 +2,12 @@
 global.orange_count_total = 0
 global.purple_count_total = 0
 
+global.kill_count_purple = 0
+global.kill_count_orange = 0
+
+global.orange_count = 0
+global.purple_count = 0
+
 d = 32*3
 bd = d*3
 global.orange_color = {b = 0, r= 0.8, g = 0.4, a = 0.8}
@@ -38,6 +44,244 @@ init_attack_data = function()
 	}
 end
 
+	
+script.on_init(function()
+	global.purple_team_x = math.random(370,380) -- distance between bases
+	global.purple_team_y = math.random(0,0)
+	global.purple_team_position ={ global.purple_team_x, global.purple_team_y}
+	global.purple_team_area = {{ global.purple_team_x - d,  global.purple_team_y - d},{ global.purple_team_x + d,  global.purple_team_y + d}}
+	global.orange_team_x = 0 - math.random(370,380) -- distance between bases
+	global.orange_team_y = 0 - math.random(0,0)
+	global.orange_team_position = { global.orange_team_x, global.orange_team_y}
+	global.orange_team_area = {{ global.orange_team_x - d,  global.orange_team_y - d},{ global.orange_team_x + d,  global.orange_team_y + d}}
+  
+	init_attack_data()
+	make_forces()  
+	make_lobby()
+end)
+
+	--global variables for the message desplay
+global.timer_value = 0
+global.timer_wait = 600
+global.timer_display = 1
+
+script.on_event(defines.events.on_tick, function(event)
+	show_health()
+  if game.tick % 20 == 0 then
+		color()
+  end
+	if game.tick == 50 * 60 then  ----------*************^^^^these have to match**********----------
+		set_spawns()
+		for k, p in pairs (game.players) do
+			make_team_option(p)
+		end
+		set_starting_areas()
+	end
+	local current_time = game.tick / 60 - global.timer_value
+	local message_display = "test"
+	if current_time >= global.timer_wait then
+		if global.timer_display == 1 then
+			message_display = {"msg-announce1"}
+			global.timer_display = 2
+		else
+			message_display = {"msg-announce2"}
+			global.timer_display = 1
+		end
+		for k, player in pairs(game.players) do
+			player.print(message_display)
+		end
+		global.timer_value = game.tick / 60
+	end
+end)
+
+script.on_event(defines.events.on_player_created, function(event)
+	if global.orange_count == nil then
+		global.orange_count = 0
+	end
+	if global.purple_count == nil then
+		global.purple_count = 0
+	end
+	local player = game.players[event.player_index]
+	player.teleport({0,8},game.surfaces["Lobby"])
+	player.print({"msg-intro1"})
+	player.print({"msg-intro2"})
+ 
+	if game.tick > 50*60 then    ------------*************vvvvvvthese have to match**********----------
+		make_team_option(player)
+	else 
+		player.print({"msg-intro3"})
+	end
+end)
+
+script.on_event(defines.events.on_gui_click, function(event)
+	local s = game.surfaces.nauvis
+	local player = game.players[event.player_index]
+    local index = event.player_index
+    local element = event.element.name
+		
+	if player.gui.top.flashlight == nil then
+        if element ~= nil then
+            if element == "flashlight" then
+                if player.character == nil then return end
+                if global.player_flashlight_state == nil then
+                    global.player_flashlight_state = {}
+                end
+                
+                if global.player_flashlight_state[event.player_index] == nil then
+                    global.player_flashlight_state[event.player_index] = true
+                end
+    
+                if global.player_flashlight_state[event.player_index] then
+                    global.player_flashlight_state[event.player_index] = false
+                    player.character.disable_flashlight()
+                else
+                    global.player_flashlight_state[event.player_index] = true
+                    player.character.enable_flashlight()
+                end
+            end
+        end
+	end	
+	if player.gui.center.end_message ~= nil then
+		if (event.element.name == "end_message_button") then
+			player.gui.center.end_message.destroy()
+		end
+    end
+	if player.gui.left.choose_team ~= nil then
+		if (event.element.name == "orange") then
+			if global.orange_count > global.purple_count then player.print("Too many Players on that team") return end
+				join_orange(event)
+		end
+	end
+	if player.gui.left.choose_team ~= nil then
+		if (event.element.name == "purple") then
+			if global.purple_count > global.orange_count then player.print("Too many Players on that team") return end
+				join_purple(event)
+		end
+	end
+	if player.gui.left.choose_team ~= nil then
+		if (event.element.name == "spectator") then
+			force_spectators(index)
+		end
+		--destroy.character
+		--make controller ghost
+	end
+    if player.gui.left.spectate ~= nil then
+        if element ~= nil then
+            if element == "spectate" then
+                force_spectators(index)
+            end
+        end
+    end
+end)
+
+script.on_event(defines.events.on_player_joined_game, function(event)
+	local player = game.players[event.player_index]
+    if player.gui.left.flashlight == nil then
+        local frame = player.gui.left.add{name = "flashlight", type = "button", direction = "horizontal", caption = "flashlight"}
+    end
+	
+	if player.admin == true then
+        if player.gui.left.spectate == nil then
+            local adminframe = player.gui.left.add{name = "spectate", type = "button", direction = "horizontal", caption = "spectate"}
+        end
+		if game.tick > 60 then
+			for k, p in pairs (game.players) do
+				p.print("All Hail Admin "..player.name)
+			end
+		end
+	end
+	show_update_score()
+	update_count()
+ end)
+
+script.on_event(defines.events.on_player_left_game, function(event)
+	if game.player.force == game.forces["Orange"] then
+		online_count = orange_online - 1
+	end
+	if game.player.force == game.forces["Purple"] then
+		online_count = purple_online - 1
+	end
+	update_count()
+end)
+ 
+script.on_event(defines.events.on_player_respawned, function(event)
+	local player = game.players[event.player_index]
+	player.insert{name="submachine-gun", count=1}
+	player.insert{name="firearm-magazine", count=10}
+end)
+
+-- for backwards compatibility
+script.on_configuration_changed(function(data)
+	if global.attack_data == nil then
+		init_attack_data()
+		if global.attack_count ~= nil then
+			global.attack_data.attack_count = global.attack_count
+		end
+		if global.until_next_attacknormal ~= nil then
+			global.attack_data.until_next_attack = global.until_next_attacknormal
+		end
+	end
+	if global.attack_data.distraction == nil then
+		global.attack_data.distraction = defines.distraction.byenemy
+	end
+end)
+
+	-- not working, not breaking. supposed to clear the players cursor_stack before they die so it ends up with their loot.
+script.on_event(defines.events.on_pre_player_died, function(event)
+	local player = game.players[event.player_index]
+	player.cursor_stack.clear()
+end)
+
+	-- on death (player) spawn a "grave" at their location holding thier loot.
+script.on_event(defines.events.on_entity_died, function(event)
+	local entity = event.entity
+
+	if entity == global.p_roboport then
+		global.drbp = entity.position orange_destroy_p()
+	end
+	if entity == global.o_roboport then
+		global.drbp = entity.position purple_destroy_o()
+	end
+	if entity.type == "player" then
+		local pos = entity.surface.find_non_colliding_position("steel-chest", entity.position, 8, 1)
+		if not pos then return end
+		local grave = entity.surface.create_entity{name="steel-chest", position=pos, force="neutral"}
+		if protective_mode then
+			grave.destructible = false
+		end
+			local grave_inv = grave.get_inventory(defines.inventory.chest)
+			local count = 0
+		for i, id in ipairs{
+			defines.inventory.player_guns,
+			defines.inventory.player_tools,
+			defines.inventory.player_ammo,
+			defines.inventory.player_quickbar,
+			defines.inventory.player_armor,
+			defines.inventory.player_main,
+			defines.inventory.player_trash} do
+			local inv = entity.get_inventory(id)
+			for j = 1, #inv do
+				if inv[j].valid_for_read then
+					count = count + 1
+					if count > #grave_inv then return end
+					grave_inv[count].set_stack(inv[j])	
+				end
+			end
+		end	
+	end	
+end)
+	
+script.on_event(defines.events.on_player_died, function(event)
+	local player = game.players[event.player_index]
+	if player.force.name == "Orange" then
+		global.kill_count_purple = global.kill_count_purple + 1  
+	end	
+	if player.force.name == "Purple" then
+		global.kill_count_orange = global.kill_count_orange + 1
+	end
+	show_update_score()
+end)
+
 function make_forces()
 	local s = game.surfaces["nauvis"]
 	game.forces["player"].chart(s,{{ global.purple_team_x - bd,  global.purple_team_y -bd}, { global.purple_team_x + bd,  global.purple_team_y + bd}} )
@@ -56,20 +300,24 @@ function set_spawns()
 
 	if ppnc ~= nil and opnc ~= nil then
 		purple.set_spawn_position({ppnc.x,ppnc.y}, s)
-		for k, object in pairs (s.find_entities{{ppnc.x-5,ppnc.y-15},{ppnc.x+5,ppnc.y-5}}) do object.destroy() end
-		global.p_roboport = s.create_entity{name = "roboport", position = {ppnc.x,ppnc.y-10}, force = purple}
+		for k, object in pairs (s.find_entities{{ppnc.x-5,ppnc.y-45},{ppnc.x+5,ppnc.y+5}}) do object.destroy() end
+		global.p_roboport = s.create_entity{name = "roboport", position = {ppnc.x,ppnc.y-40}, force = purple}
 		global.p_roboport.minable = false
 		global.p_roboport.insert{name = "construction-robot", count = 10}
 		global.p_roboport.insert{name = "repair-pack", count = 20}
 		global.p_roboport.backer_name = "Purple"
+		p_turret = s.create_entity{name = "gun-turret", position = {ppnc.x,ppnc.y-5}, force = purple}
+		p_turret.insert{name = "piercing-rounds-magazine", count = 50}
 		orange.chart(s, {{ppnc.x-32,ppnc.y-42},{ppnc.x+32,ppnc.y+22}})
 		orange.set_spawn_position({opnc.x,opnc.y}, s)
-		for k, object in pairs (s.find_entities{{opnc.x-5,opnc.y-15},{opnc.x+5,opnc.y-5}}) do object.destroy() end
-		global.o_roboport = s.create_entity{name = "roboport", position = {opnc.x,opnc.y-10}, force = orange}
+		for k, object in pairs (s.find_entities{{opnc.x-5,opnc.y-45},{opnc.x+5,opnc.y+5}}) do object.destroy() end
+		global.o_roboport = s.create_entity{name = "roboport", position = {opnc.x,opnc.y-40}, force = orange}
 		global.o_roboport.minable = false
 		global.o_roboport.insert{name = "construction-robot", count = 10}
 		global.o_roboport.insert{name = "repair-pack", count = 20}
 		global.o_roboport.backer_name = "Orange"
+		o_turret = s.create_entity{name = "gun-turret", position = {opnc.x,opnc.y-5}, force = orange}
+		o_turret.insert{name = "piercing-rounds-magazine", count = 50}
 		purple.chart(s, {{opnc.x-32,opnc.y-42},{opnc.x+32,opnc.y+22}})
 		for k, p in pairs (game.players) do
 			p.print("Teams are now unlocked")
@@ -134,7 +382,6 @@ function set_starting_areas()
 		if tile ~= "water" and tile ~= "deepwater" then 
 			s.create_entity{name = r.name, position = {nrx,nry}, force = r.force, amount = r.amount}
 		end
-		--r.destroy()
 	end
 end
 
@@ -315,137 +562,6 @@ function starting_inventory(event)
 	player.insert{name="stone-furnace", count = 10}
 end
 
-	-- distance between bases
-script.on_init(function()
-	global.purple_team_x = math.random(370,380)
-	global.purple_team_y = math.random(0,0)
-	global.purple_team_position ={ global.purple_team_x, global.purple_team_y}
-	global.purple_team_area = {{ global.purple_team_x - d,  global.purple_team_y - d},{ global.purple_team_x + d,  global.purple_team_y + d}}
-	global.orange_team_x = 0 - math.random(370,380)
-	global.orange_team_y = 0 - math.random(0,0)
-	global.orange_team_position = { global.orange_team_x, global.orange_team_y}
-	global.orange_team_area = {{ global.orange_team_x - d,  global.orange_team_y - d},{ global.orange_team_x + d,  global.orange_team_y + d}}
-  
-	init_attack_data()
-	make_forces()  
-	make_lobby()
-end)
-
-script.on_event(defines.events.on_player_created, function(event)
-	if global.orange_count == nil then
-		global.orange_count = 0
-	end
-	if global.purple_count == nil then
-		global.purple_count = 0
-	end
-	local player = game.players[event.player_index]
-	player.teleport({0,8},game.surfaces["Lobby"])
-	player.print({"msg-intro1"})
-	player.print({"msg-intro2"})
- 
-	if game.tick > 50*60 then    ------------*************vvvvvvthese have to match**********----------
-		make_team_option(player)
-	else 
-		player.print({"msg-intro3"})
-	end
-end)
-
-	--global variables for the message desplay
-global.timer_value = 0
-global.timer_wait = 600
-global.timer_display = 1
-
-script.on_event(defines.events.on_tick, function(event)
-	show_health()
-	win()
-  if game.tick % 20 == 0 then
-		color()
-  end
-	if game.tick == 50 * 60 then  ----------*************^^^^these have to match**********----------
-		set_spawns()
-		for k, p in pairs (game.players) do
-			make_team_option(p)
-		end
-		set_starting_areas()
-	end
-	local current_time = game.tick / 60 - global.timer_value
-	local message_display = "test"
-	if current_time >= global.timer_wait then
-		if global.timer_display == 1 then
-			message_display = {"msg-announce1"}
-			global.timer_display = 2
-		else
-			message_display = {"msg-announce2"}
-			global.timer_display = 1
-		end
-		for k, player in pairs(game.players) do
-			player.print(message_display)
-		end
-		global.timer_value = game.tick / 60
-	end
-end)
-
-script.on_event(defines.events.on_gui_click, function(event)
-	local s = game.surfaces.nauvis
-	local player = game.players[event.player_index]
-    local index = event.player_index
-    local element = event.element.name
-		
-	if player.gui.top.flashlight == nil then
-        if element ~= nil then
-            if element == "flashlight" then
-                if player.character == nil then return end
-                if global.player_flashlight_state == nil then
-                    global.player_flashlight_state = {}
-                end
-                
-                if global.player_flashlight_state[event.player_index] == nil then
-                    global.player_flashlight_state[event.player_index] = true
-                end
-    
-                if global.player_flashlight_state[event.player_index] then
-                    global.player_flashlight_state[event.player_index] = false
-                    player.character.disable_flashlight()
-                else
-                    global.player_flashlight_state[event.player_index] = true
-                    player.character.enable_flashlight()
-                end
-            end
-        end
-	end	
-	if player.gui.center.end_message ~= nil then
-		if (event.element.name == "end_message_button") then
-			player.gui.center.end_message.destroy()
-		end
-    end
-	if player.gui.left.choose_team ~= nil then
-		if (event.element.name == "orange") then
-			if global.orange_count > global.purple_count then player.print("Too many Players on that team") return end
-				join_orange(event)
-		end
-	end
-	if player.gui.left.choose_team ~= nil then
-		if (event.element.name == "purple") then
-			if global.purple_count > global.orange_count then player.print("Too many Players on that team") return end
-				join_purple(event)
-		end
-	end
-	if player.gui.left.choose_team ~= nil then
-		if (event.element.name == "spectator") then
-			force_spectators(index)
-		end
-		--destroy.character
-		--make controller ghost
-	end
-    if player.gui.left.spectate ~= nil then
-        if element ~= nil then
-            if element == "spectate" then
-                force_spectators(index)
-            end
-        end
-    end
-end)
-
 function show_health()
     for k, player in pairs(game.players) do
 		if player.connected then
@@ -502,118 +618,13 @@ function force_spectators(index)
         end
         player.force = game.forces["Spectators"]
         global.player_spectator_state[index] = true
-        player.color = {r = 0,b = 0, g = 1}
 		player.print("You are now a spectator")
     end
 end
 
-script.on_event(defines.events.on_player_left_game, function(event)
-	update_count()
-end)
- 
-script.on_event(defines.events.on_player_joined_game, function(event)
-	local player = game.players[event.player_index]
-    if player.gui.left.flashlight == nil then
-        local frame = player.gui.left.add{name = "flashlight", type = "button", direction = "horizontal", caption = "flashlight"}
-    end
-	
-	if player.admin == true then
-        if player.gui.left.spectate == nil then
-            local adminframe = player.gui.left.add{name = "spectate", type = "button", direction = "horizontal", caption = "spectate"}
-        end
-		if game.tick > 60 then
-			for k, p in pairs (game.players) do
-				p.print("All Hail Admin "..player.name)
-			end
-		end
-	end
-	show_update_score()
-	update_count()
- end)
- 
-script.on_event(defines.events.on_player_respawned, function(event)
-	local player = game.players[event.player_index]
-	player.insert{name="pistol", count=1}
-	player.insert{name="firearm-magazine", count=10}
-end)
-
--- for backwards compatibility
-script.on_configuration_changed(function(data)
-	if global.attack_data == nil then
-		init_attack_data()
-		if global.attack_count ~= nil then
-			global.attack_data.attack_count = global.attack_count
-		end
-		if global.until_next_attacknormal ~= nil then
-			global.attack_data.until_next_attack = global.until_next_attacknormal
-		end
-	end
-	if global.attack_data.distraction == nil then
-		global.attack_data.distraction = defines.distraction.byenemy
-	end
-end)
-
-	-- not working, not breaking. supposed to clear the players cursor_stack before they die so it ends up with their loot.
-script.on_event(defines.events.on_pre_player_died, function(event)
-	local player = game.players[event.player_index]
-	player.cursor_stack.clear()
-end)
-
-	-- on death (player) spawn a "grave" at their location holding thier loot.
-script.on_event(defines.events.on_entity_died, function(event)
-	local entity = event.entity
-
-	if entity == global.p_roboport then
-		global.drbp = entity.position orange_destroy_p()
-	end
-	if entity == global.o_roboport then
-		global.drbp = entity.position purple_destroy_o()
-	end
-	if entity.type == "player" then
-		local pos = entity.surface.find_non_colliding_position("steel-chest", entity.position, 8, 1)
-		if not pos then return end
-		local grave = entity.surface.create_entity{name="steel-chest", position=pos, force="neutral"}
-		if protective_mode then
-			grave.destructible = false
-		end
-			local grave_inv = grave.get_inventory(defines.inventory.chest)
-			local count = 0
-		for i, id in ipairs{
-			defines.inventory.player_guns,
-			defines.inventory.player_tools,
-			defines.inventory.player_ammo,
-			defines.inventory.player_quickbar,
-			defines.inventory.player_armor,
-			defines.inventory.player_main,
-			defines.inventory.player_trash} do
-			local inv = entity.get_inventory(id)
-			for j = 1, #inv do
-				if inv[j].valid_for_read then
-					count = count + 1
-					if count > #grave_inv then return end
-					grave_inv[count].set_stack(inv[j])	
-				end
-			end
 		end	
-	end	
-end)
-
-global.kill_count_purple = 0
-global.kill_count_orange = 0
-	
-script.on_event(defines.events.on_player_died, function(event)
-	local player = game.players[event.player_index]
-	if player.force.name == "Orange" then
-		global.kill_count_purple = global.kill_count_purple + 1  
-	end	
-	if player.force.name == "Purple" then
-		global.kill_count_orange = global.kill_count_orange + 1
-	end
-	show_update_score()
-end)
-
-global.orange_count = 0
-global.purple_count = 0
+	--end
+end	
 
 	-- updates the player count gui for total players joined each force, and players online for each force.
 function update_count()
@@ -623,7 +634,6 @@ function update_count()
   local purple_online = global.purple_count
   for k, p in pairs (game.players) do
 	if p.force == game.forces.Orange then
-		orange_online = 0
 		if p.connected then
 			orange_online = orange_online + 1
 		end
@@ -631,7 +641,6 @@ function update_count()
   end
   for k,p in pairs(game.players) do
 	if p.force == game.forces.Purple then
-		purple_online = 0
 		if p.connected then
 			purple_online = purple_online + 1
 		end
@@ -652,6 +661,7 @@ function update_count()
   end
 end
 
+	--this is for a server to monotor chat and print chat in game from a web page.(@StudMuffin/Discord)
 function server_message(user, message)
     print("[WEB] ", user, ": ", message)
     for _, p in pairs (game.connected_players) do
@@ -672,6 +682,7 @@ function show_update_score()
 			end
 		end
 	end
+	win()
 end
 
 function color()
