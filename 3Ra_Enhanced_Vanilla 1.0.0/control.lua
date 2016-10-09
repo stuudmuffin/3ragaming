@@ -29,5 +29,11 @@ function player_respawned(event)
 	player.insert{name="firearm-magazine", count=10}
 end
 
+--Special command for communicating through our custom web-gui
+function server_message(user, message)
+	print("[WEB] "..user..": "..message)
+	game.print("[WEB] "..user..": "..message)
+end
+
 Event.register(defines.events.on_player_created, player_joined)
 Event.register(defines.events.on_player_respawned, player_respawned)
